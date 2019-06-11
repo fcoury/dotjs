@@ -1,4 +1,4 @@
-(function() {
+window.onload = function() {
   function saveItem(id, desc, value) {
     const savedDataStr = localStorage.getItem('$savedData');
     const savedData = (savedDataStr && JSON.parse(savedDataStr)) || [];
@@ -114,25 +114,40 @@
   }
 
   function processEstoque() {
-    const dataStr = localStorage.getItem('$savedData');
-    if (!dataStr) {
-      return;
-    }
+    const dataStr = localStorage.getItem('$savedData') || '[]';
     const data = JSON.parse(dataStr);
 
-    const els = Array.prototype.slice.call(document.getElementsByClassName('produto'));
+    const els = Array.prototype.slice.call(document.querySelectorAll('[formarrayname="items"] > div .media-body'));
+    console.log('data', data);
+    console.log('els', els);
     els.forEach(el => {
-      const idEl = el.children[3];
-      const id = idEl.children[0].name.split('[')[1].split(']')[0];
+      console.log('el.id', el.id);
+      if (!el.id) {
+        return;
+      }
+      const id = el.id.split('-')[2];
 
-      const saved = data.find(d => d.id === id);
+      const refEl = document.getElementById(`item-referencia-${id}`);
+      const ref = refEl.innerHTML.split('REF: ')[1];
+
+      const saved = data.find(d => d.id === ref);
 
       console.log('id', id);
       console.log('saved', saved);
 
-      const descEl = el.children[4];
-      const desc = (saved && saved.desc) || descEl.innerHTML;
+      const divEl = document.getElementById(`item-qtdeenviar-${id}`);
+
+      console.log('ref', ref);
+
+      const descId = `inserted-${id}`;
+      console.log('x', document.getElementById(descId));
+      const descEl = document.getElementById(descId) || document.createElement('div');
+      descEl.id = descId;
+      const desc = saved && saved.desc;
       const value = saved && saved.value;
+
+      console.log('desc', desc);
+      console.log('value', value);
 
       descEl.innerHTML = `
       <input class='desc' value='${desc}'>
@@ -141,18 +156,20 @@
       const descInput = descEl.children[0];
       const valueInput = descEl.children[1];
 
+      divEl.appendChild(descEl);
+
       descInput.onblur = (e) => {
         const desc = e.target.value;
         const value = valueInput.value;
         console.log('id', id);
         console.log('desc', desc);
         console.log('value', value);
-        saveItem(id, desc, value);
+        saveItem(ref, desc, value);
       };
       valueInput.onblur = (e) => {
         const value = e.target.value;
         const desc = descInput.value;
-        saveItem(id, desc, value);
+        saveItem(ref, desc, value);
       };
     });
   }
@@ -163,6 +180,7 @@
   } else if (url.indexOf('estoque/declaracao') > -1) {
     return processDeclaracao();
   } else if (url.endsWith('estoque')) {
+    console.log('estoque');
     return processEstoque();
   }
-})();
+};
