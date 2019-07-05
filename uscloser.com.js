@@ -100,7 +100,9 @@ function processDeclaracao() {
       descr.dispatchEvent(new Event('input'));
 
       sendString(descr, row.desc);
-      sendString(valor, row.value);
+      if (valor.value === 'U$ 0,00') {
+        sendString(valor, row.value);
+      }
       descr.dispatchEvent(new Event('blur'));
       valor.dispatchEvent(new Event('blur'));
     }
