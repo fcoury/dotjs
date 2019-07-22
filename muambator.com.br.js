@@ -1,3 +1,8 @@
+// hides ad
+const adbar = document.getElementsByClassName('HB-Bar')[0];
+console.log('adbar', adbar);
+adbar.style = 'display: none';
+
 const logoEl = document.getElementsByTagName('img')[0];
 const linkEl = logoEl.parentElement;
 linkEl.setAttribute('href', '/pacotes/pendentes/');
@@ -18,3 +23,5 @@ newEl.textContent = 'Pendentes';
 parentEl.removeChild(ulEl);
 parentEl.removeChild(el);
 parentEl.appendChild(newEl);
+
+
