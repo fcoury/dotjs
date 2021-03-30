@@ -1,7 +1,14 @@
 // hides ad
 const adbar = document.getElementsByClassName('HB-Bar')[0];
 console.log('adbar', adbar);
-adbar.style = 'display: none';
+if (adbar) {
+  adbar.style = 'display: none';
+}
+
+const bannerPro = document.getElementById('banner-pro');
+if (bannerPro) {
+  bannerPro.style = 'display: none';
+}
 
 const logoEl = document.getElementsByTagName('img')[0];
 const linkEl = logoEl.parentElement;
