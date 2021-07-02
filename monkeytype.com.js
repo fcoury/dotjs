@@ -5,7 +5,7 @@
       const wpm = wpmEl[0].textContent;
       if (wpm.indexOf('-') === -1) {
         console.log('wpm', wpm);
-        fetch(`http://localhost:3000/finishWpm?wpm=${wpm}`);
+        fetch(`http://clackbot.herokuapp.com/finishWpm?wpm=${wpm}`);
         return;
       }
     }
