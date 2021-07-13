@@ -10,6 +10,13 @@ if (bannerPro) {
   bannerPro.style = 'display: none';
 }
 
+const faq = document.getElementsByClassName('faq-section');
+console.log('faq', faq, faq.length);
+if (faq.length) {
+  faq[0].style = 'display: none';
+}
+
+
 const logoEl = document.getElementsByTagName('img')[0];
 const linkEl = logoEl.parentElement;
 linkEl.setAttribute('href', '/pacotes/pendentes/');
