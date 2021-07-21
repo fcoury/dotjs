@@ -250,11 +250,50 @@ function processEstoque() {
       saveItem(ref, desc, value);
     };
   });
+
+  const items = [];
+  const totalEl = document.createElement('button');
+  const toAdd = document.querySelector('body > app-root > app-full-layout > div > div.main-panel > div > div > div > app-estoque > section > form > div:nth-child(2) > div');
+  if (!toAdd) {
+    setTimeout(() => { processEstoque() }, 200);
+    return;
+  }
+  totalEl.className = 'btn btn-info btn-raised ml-1';
+  totalEl.disabled = 'true';
+  totalEl.innerHTML = '0.00lbs $-';
+  toAdd.appendChild(totalEl);
+  document.querySelectorAll('.btn-dropbox').forEach(el => {
+    const parent = el.parentElement.parentElement;
+    if (parent && parent.children && parent.classList.contains('media-body')) {
+      const children = [...parent.children];
+      const item = children.reduce((hash, child) => {
+        const { tagName, id } = child;
+        if (child.tagName !== 'P') return hash;
+        hash[id.split('-')[1]] = child.innerText.match(/(\d+),(\d+)lbs/)
+          ? parseFloat(
+            child.innerText
+              .split(': ')[1]
+              .replace(/(\d+),(\d+)lbs/g, '$1.$2')
+          )
+          : child.innerText.split(': ')[1];
+        return hash;
+      }, {});
+      el.addEventListener('click', event => {
+        if (event.target !== el) return;
+        const pos = items.find(el => el.referencia = item.referencia);
+        if (pos > -1) return;
+        items.push(item);
+        const total = 0.7 + items.reduce((t, i) => t += i.pesototal, 0);
+        const cost = (15 + Math.ceil(total) * 10).toFixed(2);
+        totalEl.innerHTML = `${total.toFixed(2)}lbs $${cost}`;
+      });
+    }
+  });
 }
 
 function killNotifications() {
   const style = document.createElement('style');
-  style.type = 'text/css';
+  // style.type = 'text/css';
   style.innerHTML = `
     .snotify-warning { display: none !important; }
   `;
@@ -324,4 +363,8 @@ let currentUrl;
     }, 200);
   };
   onChanged();
+
+  window.addEventListener('DOMContentLoaded', (event) => {
+    onChanged();
+  });
 })();
