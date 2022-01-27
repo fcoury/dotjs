@@ -73,7 +73,7 @@ function sendString(el, str) {
   for (let i = 0; i < str.length; i++) {
     const key = str.charAt(i);
     const code = str.charCodeAt(i);
-    const ev = new KeyboardEvent('keypress', {which: code, keyCode: code, key})
+    const ev = new KeyboardEvent('keypress', { which: code, keyCode: code, key })
     el.dispatchEvent(ev);
   }
 }
@@ -95,6 +95,11 @@ function processDeclaracao() {
 
     const descr = document.getElementById(`descricao-declarado-${idx}`);
     const valor = document.getElementById(`valor-declarado-${idx}`);
+    const quant = document.getElementById(`qtde-declarado-${idx}`);
+
+    console.log('row', row);
+    console.log('familia', familia);
+
     if (row) {
       descr.value = row.desc;
       descr.dispatchEvent(new Event('input'));
@@ -106,7 +111,34 @@ function processDeclaracao() {
       descr.dispatchEvent(new Event('blur'));
       valor.dispatchEvent(new Event('blur'));
     }
+
+    console.log('quant', quant);
+    quant.value = '0';
+    quant.dispatchEvent(new Event('input'));
+
+    const familias = document.querySelectorAll('[formcontrolname=familia]');
+    familias.forEach(select => {
+      console.log('select', select);
+      select.selectedIndex = 11;
+      select.value = 'JJH';
+      select.dispatchEvent(new Event('change'));
+      // select.dispatchEvent(new Event('input'));
+      select.dispatchEvent(new Event('blur'));
+    });
   });
+}
+
+function processFrete() {
+  function hide(id) {
+    const el = document.getElementById(id);
+    if (!el) return;
+
+    const parent = el.parentElement.parentElement.parentElement;
+    parent.style.display = 'none';
+  }
+
+  hide('frete_2');
+  hide('frete_3');
 }
 
 function oldProcessDeclaracao() {
@@ -218,11 +250,50 @@ function processEstoque() {
       saveItem(ref, desc, value);
     };
   });
+
+  const items = [];
+  const totalEl = document.createElement('button');
+  const toAdd = document.querySelector('body > app-root > app-full-layout > div > div.main-panel > div > div > div > app-estoque > section > form > div:nth-child(2) > div');
+  if (!toAdd) {
+    setTimeout(() => { processEstoque() }, 200);
+    return;
+  }
+  totalEl.className = 'btn btn-info btn-raised ml-1';
+  totalEl.disabled = 'true';
+  totalEl.innerHTML = '0.00lbs $-';
+  toAdd.appendChild(totalEl);
+  document.querySelectorAll('.btn-dropbox').forEach(el => {
+    const parent = el.parentElement.parentElement;
+    if (parent && parent.children && parent.classList.contains('media-body')) {
+      const children = [...parent.children];
+      const item = children.reduce((hash, child) => {
+        const { tagName, id } = child;
+        if (child.tagName !== 'P') return hash;
+        hash[id.split('-')[1]] = child.innerText.match(/(\d+),(\d+)lbs/)
+          ? parseFloat(
+            child.innerText
+              .split(': ')[1]
+              .replace(/(\d+),(\d+)lbs/g, '$1.$2')
+          )
+          : child.innerText.split(': ')[1];
+        return hash;
+      }, {});
+      el.addEventListener('click', event => {
+        if (event.target !== el) return;
+        const pos = items.find(el => el.referencia = item.referencia);
+        if (pos > -1) return;
+        items.push(item);
+        const total = 0.7 + items.reduce((t, i) => t += i.pesototal, 0);
+        const cost = (15 + Math.ceil(total) * 10).toFixed(2);
+        totalEl.innerHTML = `${total.toFixed(2)}lbs $${cost}`;
+      });
+    }
+  });
 }
 
 function killNotifications() {
   const style = document.createElement('style');
-  style.type = 'text/css';
+  // style.type = 'text/css';
   style.innerHTML = `
     .snotify-warning { display: none !important; }
   `;
@@ -246,6 +317,8 @@ function detectChanges() {
   console.log(' *** url', url);
   if (url.indexOf('estoque/endereco') > -1) {
     return processEndereco();
+  } else if (url.indexOf('estoque/frete') > -1) {
+    return processFrete();
   } else if (url.indexOf('estoque/declaracao') > -1) {
     return processDeclaracao();
   } else if (url.endsWith('estoque')) {
@@ -254,8 +327,28 @@ function detectChanges() {
   }
 }
 
+// let currentUrl;
+// window.onload = function () {
+//   currentUrl = location.href;
+//   detectChanges();
+//   const onChanged = () => {
+//     if (location.href === currentUrl) {
+//       setTimeout(() => onChanged(), 300);
+//       return;
+//     }
+//     currentUrl = location.href;
+//     setTimeout(() => {
+//       detectChanges();
+//       setTimeout(() => onChanged(), 300);
+//     }, 200);
+//   };
+//   onChanged();
+// };
+
+// killNotifications();
+
 let currentUrl;
-window.onload = function() {
+(function () {
   currentUrl = location.href;
   detectChanges();
   const onChanged = () => {
@@ -270,6 +363,8 @@ window.onload = function() {
     }, 200);
   };
   onChanged();
-};
 
-killNotifications();
+  window.addEventListener('DOMContentLoaded', (event) => {
+    onChanged();
+  });
+})();
