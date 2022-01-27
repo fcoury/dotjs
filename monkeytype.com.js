@@ -1,12 +1,20 @@
 (function() {
+  let wpmVisible = false;
   function checkForWpm() {
     const wpmEl = document.querySelectorAll('.wpm > [data-balloon-pos="up"]');
-    if (wpmEl) {
-      const wpm = wpmEl[0].textContent;
-      if (wpm.indexOf('-') === -1) {
-        console.log('wpm', wpm);
-        fetch(`http://localhost:3000/finishWpm?wpm=${wpm}`);
-        return;
+    if (wpmVisible) {
+      if (!wpmEl || !wpmEl[0] || wpmEl[0].offsetParent === null) {
+        console.log('WPM went away');
+        wpmVisible = false;
+      }
+    } else {
+      if (wpmEl && wpmEl[0] && wpmEl[0].offsetParent) {
+        const wpm = wpmEl[0].textContent;
+        if (wpm.indexOf('-') === -1) {
+          console.log('wpm', wpm);
+          wpmVisible = true;
+          fetch(`https://clackbot.herokuapp.com/finishWpm?wpm=${wpm}`);
+        }
       }
     }
     setTimeout(checkForWpm, 200);
