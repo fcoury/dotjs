@@ -276,6 +276,9 @@ function processEstoque() {
               .replace(/(\d+),(\d+)lbs/g, '$1.$2')
           )
           : child.innerText.split(': ')[1];
+        const qtdEl = parent.querySelector('input');
+        hash.qtdEl = qtdEl;
+        hash.getQtd = () => parseInt(hash.estoqueitem, 10) - parseInt(qtdEl.value, 10);
         return hash;
       }, {});
       el.addEventListener('click', event => {
@@ -283,7 +286,7 @@ function processEstoque() {
         const pos = items.find(el => el.referencia = item.referencia);
         if (pos > -1) return;
         items.push(item);
-        const total = 0.7 + items.reduce((t, i) => t += i.pesototal, 0);
+        const total = 0.7 + items.reduce((t, i) => t += (i.pesoitem * i.getQtd()), 0);
         const cost = (15 + Math.ceil(total) * 10).toFixed(2);
         totalEl.innerHTML = `${total.toFixed(2)}lbs $${cost}`;
       });
